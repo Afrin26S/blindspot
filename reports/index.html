@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BlindSpot Report</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.0/mermaid.min.js"></script>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+          max-width: 960px; margin: 40px auto; padding: 0 20px; color: #1a1a1a; line-height: 1.5; }
+  h1 { border-bottom: 3px solid #4f46e5; padding-bottom: 8px; }
+  h2 { margin-top: 8px; color: #312e81; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #eee; font-size: 14px; }
+  th { background: #f4f4f8; }
+  tr:hover { background: #fafafa; }
+  section { margin-bottom: 48px; }
+  .mermaid { text-align: center; margin-top: 16px; }
+  .meta { color: #666; font-size: 14px; }
+  code { background: #f4f4f8; padding: 2px 6px; border-radius: 4px; }
+</style>
+</head>
+<body>
+  <h1>🔎 BlindSpot Report</h1>
+  <p class="meta">Analyzed <strong>137</strong> functions in
+     <code>C:\blindspot\sample-repo</code></p>
+
+  <section>
+    <h2>Architecture</h2>
+    <h1>Architecture Overview</h1>
+<p>**Microblog** is a Flask-based social networking application following the application factory pattern with a modular blueprint architecture. The application is started from `microblog.py`, which calls `create_app()` in `app/__init__.py` to build the Flask instance, initialize all extensions, register blueprints, and wire up background task infrastructure.</p>
+<p>The system is organized into four main blueprint modules â€” **auth** (registration, login, password reset), **main** (primary feed and profile views), **api** (REST endpoints, token auth), and **errors** (HTTP error handlers) â€” plus service modules for background jobs, full-text search, email delivery, and translation. Configuration is centralized in `config.py`, loaded from environment variables / `.env`.</p>
+<p>The **data layer** lives in `app/models.py`: SQLAlchemy models (`User`, `Post`, `Message`, `Notification`, `Task`) augmented by two mixins â€” `SearchableMixin` (hooks `before_commit`/`after_commit` to keep Elasticsearch in sync) and `PaginatedAPIMixin` (provides `to_collection_dict` for paginated REST responses). API clients authenticate via bearer tokens stored on the `User` model; browser clients use Flask-Login sessions.</p>
+<p>**Background work** (e.g. exporting posts) runs as RQ jobs enqueued into Redis. `app/tasks.py` defines the job handlers, `app/search.py` wraps Elasticsearch, `app/translate.py` calls the Microsoft Translator API, and `app/email.py` dispatches mail through a background thread to avoid blocking request handling.</p>
+<p>---</p>
+<h2>Module Relationship Diagram</h2>
+<p>---</p>
+<h2>Key Files</h2>
+<p>| File | Purpose | Notes |</p>
+<p>|---|---|---|</p>
+<p>| `microblog.py` | Entry point &amp; Flask shell context | Exposes `app`, `db`, `User`, `Post` etc. in `flask shell` |</p>
+<p>| `config.py` | Centralised `Config` class | Reads all settings from env / `.env`; SQLite fallback for DB |</p>
+<p>| `app/__init__.py` | App factory (`create_app`) | Initialises extensions, registers blueprints, configures logging |</p>
+<p>| `app/models.py` | All SQLAlchemy models + mixins | `SearchableMixin` wires ES; `PaginatedAPIMixin` powers REST lists |</p>
+<p>| `app/api/users.py` | REST CRUD for users | Token-authenticated; `update_user` enforces ownership |</p>
+<p>| `app/api/auth.py` | HTTP Basic + Bearer token auth | `token_auth` used to protect every API endpoint |</p>
+<p>| `app/api/tokens.py` | Token issue / revoke | `POST /api/tokens` â†’ token; `DELETE /api/tokens` â†’ revoke |</p>
+<p>| `app/auth/routes.py` | Browser auth flows | Login, register, password-reset request, password-reset confirm |</p>
+<p>| `app/main/routes.py` | Main app views | Index feed, user profile, follow/unfollow, messages, notifications |</p>
+<p>| `app/errors/handlers.py` | Error pages | Custom HTML (browser) and JSON (API) for 404 / 500 |</p>
+<p>| `app/email.py` | Email dispatch | Sends via background thread to avoid blocking; uses Flask-Mail |</p>
+<p>| `app/tasks.py` | Background RQ jobs | `export_posts` example; updates job progress via RQ meta |</p>
+<p>| `app/search.py` | Elasticsearch wrapper | `add_to_index`, `remove_from_index`, `query_index` |</p>
+<p>| `app/translate.py` | Translation helper | Calls Microsoft Translator REST API; requires `MS_TRANSLATOR_KEY` |</p>
+<p>| `app/cli.py` | CLI blueprint | `flask translate init/update/compile` wrappers around pybabel |</p>
+    <div class="mermaid">
+graph TD
+    microblog["microblog.py\n(entry point / shell context)"]
+    config["config.py\n(Config class)"]
+
+    subgraph factory["App Factory"]
+        appInit["app/__init__.py\ncreate_app()"]
+    end
+
+    subgraph extensions["Core Extensions"]
+        db["SQLAlchemy (db)"]
+        login["Flask-Login"]
+        mail_ext["Flask-Mail"]
+        migrate["Flask-Migrate"]
+        babel["Flask-Babel"]
+        elastic["Elasticsearch"]
+        redis_ext["Redis"]
+        rq_ext["RQ task queue"]
+    end
+
+    subgraph models_layer["Data Layer"]
+        models["app/models.py\nUser Â· Post Â· Message\nNotification Â· Task"]
+        searchMixin["SearchableMixin\n(ES index hooks)"]
+        paginateMixin["PaginatedAPIMixin\n(collection pagination)"]
+    end
+
+    subgraph blueprints["Route Blueprints"]
+        auth_bp["app/auth/\nlogin Â· logout Â· register\npassword reset"]
+        main_bp["app/main/\nfeed Â· profile Â· follow\nmessages Â· notifications"]
+        api_bp["app/api/\nREST users Â· tokens\ntoken auth Â· errors"]
+        errors_bp["app/errors/\n404 Â· 500 handlers"]
+        cli_bp["app/cli.py\npybabel CLI commands"]
+    end
+
+    subgraph services["Service Layer"]
+        email_svc["app/email.py\nsend_email()"]
+        tasks_svc["app/tasks.py\nRQ job handlers"]
+        search_svc["app/search.py\nES add/remove/query"]
+        translate_svc["app/translate.py\nMS Translator API"]
+    end
+
+    microblog --> appInit
+    config --> appInit
+
+    appInit --> db
+    appInit --> login
+    appInit --> mail_ext
+    appInit --> migrate
+    appInit --> babel
+    appInit --> elastic
+    appInit --> redis_ext
+    appInit --> rq_ext
+
+    appInit --> auth_bp
+    appInit --> main_bp
+    appInit --> api_bp
+    appInit --> errors_bp
+    appInit --> cli_bp
+    appInit --> models
+
+    models --> searchMixin
+    models --> paginateMixin
+    models --> search_svc
+
+    auth_bp --> models
+    auth_bp --> email_svc
+
+    main_bp --> models
+
+    api_bp --> models
+
+    tasks_svc --> models
+    tasks_svc --> email_svc
+
+    search_svc --> elastic
+    </div>
+  </section>
+
+  <section>
+    <h2>Risk Report &mdash; Riskiest Functions</h2>
+    <table>
+      <tr><th>File</th><th>Function</th><th>Complexity</th><th>Git Churn</th><th>Has Test?</th><th>Risk Score</th></tr>
+      <tr>
+      <td>app\api\users.py</td>
+      <td>update_user</td>
+      <td>8</td>
+      <td>0</td>
+      <td>❌</td>
+      <td><strong>0.7</strong></td>
+    </tr><tr>
+      <td>config.py</td>
+      <td>Config</td>
+      <td>5</td>
+      <td>11</td>
+      <td>✅</td>
+      <td><strong>0.6667</strong></td>
+    </tr><tr>
+      <td>app\models.py</td>
+      <td>after_commit</td>
+      <td>7</td>
+      <td>0</td>
+      <td>❌</td>
+      <td><strong>0.6</strong></td>
+    </tr><tr>
+      <td>app\__init__.py</td>
+      <td>create_app</td>
+      <td>10</td>
+      <td>0</td>
+      <td>✅</td>
+      <td><strong>0.6</strong></td>
+    </tr><tr>
+      <td>app\auth\routes.py</td>
+      <td>login</td>
+      <td>7</td>
+      <td>0</td>
+      <td>❌</td>
+      <td><strong>0.6</strong></td>
+    </tr><tr>
+      <td>app\api\users.py</td>
+      <td>create_user</td>
+      <td>6</td>
+      <td>0</td>
+      <td>❌</td>
+      <td><strong>0.5</strong></td>
+    </tr><tr>
+      <td>app\models.py</td>
+      <td>PaginatedAPIMixin</td>
+      <td>5</td>
+      <td>0</td>
+      <td>❌</td>
+      <td><strong>0.4</strong></td>
+    </tr><tr>
+      <td>app\models.py</td>
+      <td>from_dict</td>
+      <td>5</td>
+      <td>0</td>
+      <td>❌</td>
+      <td><strong>0.4</strong></td>
+    </tr><tr>
+      <td>app\main\routes.py</td>
+      <td>index</td>
+      <td>5</td>
+      <td>0</td>
+      <td>❌</td>
+      <td><strong>0.4</strong></td>
+    </tr><tr>
+      <td>microblog.py</td>
+      <td>make_shell_context</td>
+      <td>1</td>
+      <td>6</td>
+      <td>❌</td>
+      <td><strong>0.3273</strong></td>
+    </tr><tr>
+      <td>app\email.py</td>
+      <td>send_email</td>
+      <td>4</td>
+      <td>0</td>
+      <td>❌</td>
+      <td><strong>0.3</strong></td>
+    </tr><tr>
+      <td>app\models.py</td>
+      <td>SearchableMixin</td>
+      <td>4</td>
+      <td>0</td>
+      <td>❌</td>
+      <td><strong>0.3</strong></td>
+    </tr><tr>
+      <td>app\models.py</td>
+      <td>to_collection_dict</td>
+      <td>4</td>
+      <td>0</td>
+      <td>❌</td>
+      <td><strong>0.3</strong></td>
+    </tr><tr>
+      <td>app\translate.py</td>
+      <td>translate</td>
+      <td>4</td>
+      <td>0</td>
+      <td>❌</td>
+      <td><strong>0.3</strong></td>
+    </tr><tr>
+      <td>app\auth\routes.py</td>
+      <td>reset_password_request</td>
+      <td>4</td>
+      <td>0</td>
+      <td>❌</td>
+      <td><strong>0.3</strong></td>
+    </tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>Docs vs Code Drift</h2>
+    <h1>Doc Drift Report</h1>
+<p>Files checked against code: `app/__init__.py`, `app/auth/routes.py`,</p>
+<p>`app/main/routes.py`, `app/api/users.py`, `requirements.txt`, `tests.py`,</p>
+<p>`.flaskenv`.</p>
+<p>---</p>
+<h2>No reproducible contradictions found</h2>
+<p>Each candidate finding was verified by running the code before being included.</p>
+<p>All three candidates were invalidated:</p>
+<p>| Candidate | Claim | Actual behaviour |</p>
+<p>|---|---|---|</p>
+<p>| `requirements.txt` Flask-Mail 0.9.1 + Flask 3.0 | `from flask_mail import Mail` would raise `ImportError` | Import succeeds â€” Flask-Mail 0.9.1 works under Flask 3.0 in this environment |</p>
+<p>| `tests.py` missing Redis stub | `create_app()` raises `ConnectionError` without Redis | `redis.Redis.from_url()` and `rq.Queue()` are lazy; they construct without a live server and only fail on the first actual command |</p>
+<p>| `.flaskenv` `FLASK_DEBUG=1` | Logger has no handlers, all output silently dropped | Flask&#x27;s own debug mode attaches a `StreamHandler` to stderr; `app.logger` is never silent |</p>
+<p>The README contains no technical claims to contradict. The deployment files</p>
+<p>(`Dockerfile`, `boot.sh`, `Procfile`) are consistent with what `microblog.py`</p>
+<p>and `app/__init__.py` actually do.</p>
+  </section>
+
+  <script>mermaid.initialize({ startOnLoad: true, theme: 'default' });</script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+sample-repo/
+__pycache__/
+.pytest_cache/
+*.pyc

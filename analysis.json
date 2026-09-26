@@ -1,0 +1,180 @@
+{
+  "repo_path": "C:\\blindspot\\sample-repo",
+  "file_tree": [
+    "app\\__init__.py",
+    "app\\api\\__init__.py",
+    "app\\api\\auth.py",
+    "app\\api\\errors.py",
+    "app\\api\\tokens.py",
+    "app\\api\\users.py",
+    "app\\auth\\__init__.py",
+    "app\\auth\\email.py",
+    "app\\auth\\forms.py",
+    "app\\auth\\routes.py",
+    "app\\cli.py",
+    "app\\email.py",
+    "app\\errors\\__init__.py",
+    "app\\errors\\handlers.py",
+    "app\\main\\__init__.py",
+    "app\\main\\forms.py",
+    "app\\main\\routes.py",
+    "app\\models.py",
+    "app\\search.py",
+    "app\\tasks.py",
+    "app\\translate.py",
+    "config.py",
+    "microblog.py",
+    "migrations\\env.py",
+    "migrations\\versions\\2b017edaa91f_add_language_to_posts.py",
+    "migrations\\versions\\37f06a334dbf_new_fields_in_user_model.py",
+    "migrations\\versions\\780739b227a7_posts_table.py",
+    "migrations\\versions\\834b1a697901_user_tokens.py",
+    "migrations\\versions\\ae346256b650_followers.py",
+    "migrations\\versions\\c81bac34faab_tasks.py",
+    "migrations\\versions\\d049de007ccf_private_messages.py",
+    "migrations\\versions\\e517276bb1c2_users_table.py",
+    "migrations\\versions\\f7ac3d27bb1d_notifications.py",
+    "tests.py"
+  ],
+  "entry_points": [
+    "app\\cli.py"
+  ],
+  "top_risky_functions": [
+    {
+      "file": "app\\api\\users.py",
+      "name": "update_user",
+      "complexity": 8,
+      "line": 66,
+      "churn": 0,
+      "has_test_reference": false,
+      "risk_score": 0.7
+    },
+    {
+      "file": "config.py",
+      "name": "Config",
+      "complexity": 5,
+      "line": 8,
+      "churn": 11,
+      "has_test_reference": true,
+      "risk_score": 0.6667
+    },
+    {
+      "file": "app\\models.py",
+      "name": "after_commit",
+      "complexity": 7,
+      "line": 41,
+      "churn": 0,
+      "has_test_reference": false,
+      "risk_score": 0.6
+    },
+    {
+      "file": "app\\__init__.py",
+      "name": "create_app",
+      "complexity": 10,
+      "line": 31,
+      "churn": 0,
+      "has_test_reference": true,
+      "risk_score": 0.6
+    },
+    {
+      "file": "app\\auth\\routes.py",
+      "name": "login",
+      "complexity": 7,
+      "line": 15,
+      "churn": 0,
+      "has_test_reference": false,
+      "risk_score": 0.6
+    },
+    {
+      "file": "app\\api\\users.py",
+      "name": "create_user",
+      "complexity": 6,
+      "line": 46,
+      "churn": 0,
+      "has_test_reference": false,
+      "risk_score": 0.5
+    },
+    {
+      "file": "app\\models.py",
+      "name": "PaginatedAPIMixin",
+      "complexity": 5,
+      "line": 63,
+      "churn": 0,
+      "has_test_reference": false,
+      "risk_score": 0.4
+    },
+    {
+      "file": "app\\models.py",
+      "name": "from_dict",
+      "complexity": 5,
+      "line": 252,
+      "churn": 0,
+      "has_test_reference": false,
+      "risk_score": 0.4
+    },
+    {
+      "file": "app\\main\\routes.py",
+      "name": "index",
+      "complexity": 5,
+      "line": 28,
+      "churn": 0,
+      "has_test_reference": false,
+      "risk_score": 0.4
+    },
+    {
+      "file": "microblog.py",
+      "name": "make_shell_context",
+      "complexity": 1,
+      "line": 10,
+      "churn": 6,
+      "has_test_reference": false,
+      "risk_score": 0.3273
+    },
+    {
+      "file": "app\\email.py",
+      "name": "send_email",
+      "complexity": 4,
+      "line": 12,
+      "churn": 0,
+      "has_test_reference": false,
+      "risk_score": 0.3
+    },
+    {
+      "file": "app\\models.py",
+      "name": "SearchableMixin",
+      "complexity": 4,
+      "line": 19,
+      "churn": 0,
+      "has_test_reference": false,
+      "risk_score": 0.3
+    },
+    {
+      "file": "app\\models.py",
+      "name": "to_collection_dict",
+      "complexity": 4,
+      "line": 65,
+      "churn": 0,
+      "has_test_reference": false,
+      "risk_score": 0.3
+    },
+    {
+      "file": "app\\translate.py",
+      "name": "translate",
+      "complexity": 4,
+      "line": 6,
+      "churn": 0,
+      "has_test_reference": false,
+      "risk_score": 0.3
+    },
+    {
+      "file": "app\\auth\\routes.py",
+      "name": "reset_password_request",
+      "complexity": 4,
+      "line": 56,
+      "churn": 0,
+      "has_test_reference": false,
+      "risk_score": 0.3
+    }
+  ],
+  "total_functions_analyzed": 137
+}
