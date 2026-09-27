@@ -4,6 +4,12 @@
 
 Built for the IBM Bob 2.0 Hackathon, September 2026.
 
+## 🔗 Live Demo
+
+See the actual generated report from our demo run: **[blindspot-khaki.vercel.app](https://blindspot-khaki.vercel.app)**
+
+This is the real output — architecture diagram, risk-ranked functions, and the verified doc-drift findings — not a mockup.
+
 ## The problem
 
 Onboarding onto an unfamiliar codebase and finding its riskiest, least-tested
